@@ -13,7 +13,6 @@ resource "aws_instance" "test_instance" {
   vpc_security_group_ids = [aws_security_group.allowed_ip.id] # Applying security group to instance network interface
   key_name               = "test_instance"
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
-
   }
 
 
@@ -35,7 +34,8 @@ resource "null_resource" "docker_install" {
       "sudo chmod +x /usr/local/bin/docker-compose",
       "sudo usermod -aG docker ubuntu",
       "sudo systemctl start docker",
-      "sudo systemctl enable docker"
+      "sudo systemctl enable docker",
+    "sudo docker run -d -p 1080:1080 mockserver/mockserver"
     ]
   }
 }
@@ -46,6 +46,13 @@ resource "aws_security_group" "allowed_ip" {
   ingress {
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_ips]
+  }
+# For mockserver access
+    ingress {
+    from_port   = 1080
+    to_port     = 1080
     protocol    = "tcp"
     cidr_blocks = [var.allowed_ips]
   }
